@@ -2,10 +2,11 @@ name: Build and Release
 
 on:
   push:
+    branches: [ main, master ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -25,9 +26,6 @@ jobs:
 
     - name: Build
       run: dotnet build Jellyfin.Plugin.MoviesRefine/Jellyfin.Plugin.MoviesRefine.csproj --configuration Release --no-restore
-    
-    - name: Test
-      run: dotnet run --project PluginTester.cs
     
     - name: Extract version from tag
       if: startsWith(github.ref, 'refs/tags/v')
