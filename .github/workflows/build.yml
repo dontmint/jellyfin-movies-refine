@@ -91,9 +91,18 @@ jobs:
         # Commit and push the updated manifest
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        
+        # Fetch latest changes and rebase to avoid conflicts
+        git fetch origin master
+        git checkout master
+        git pull origin master
+        
+        # Re-apply the manifest changes after pulling latest
+        jq --argjson newVersion "$NEW_VERSION" '.[0].versions = [$newVersion] + .[0].versions' manifest.json > manifest_temp.json && mv manifest_temp.json manifest.json
+        
         git add manifest.json
         git commit -m "chore: add version ${{ steps.get_version.outputs.VERSION }} to manifest.json" || exit 0
-        git push origin HEAD:master
+        git push origin master
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
