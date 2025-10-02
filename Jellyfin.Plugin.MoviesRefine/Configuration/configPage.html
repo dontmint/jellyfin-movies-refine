@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Movies Refine</title>
+</head>
+<body>
+    <div id="MoviesRefineConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="MoviesRefineConfigForm">
+                    <div class="verticalSection">
+                        <h2>Movies Refine Configuration</h2>
+                        <p>Configure automatic movie name cleaning and manual cleanup options.</p>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h3>Automatic Scanning</h3>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtScanInterval">Scan Interval (Hours):</label>
+                            <input id="txtScanInterval" name="txtScanInterval" type="number" min="1" max="168" class="emby-input" />
+                            <div class="fieldDescription">How often to automatically scan and clean movie names (1-168 hours)</div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h3>Cleaning Options</h3>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input id="chkRemoveYear" name="chkRemoveYear" type="checkbox" is="emby-checkbox" />
+                                <span>Remove Year from Movie Names</span>
+                            </label>
+                            <div class="fieldDescription">Remove year information from cleaned movie names</div>
+                        </div>
+
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input id="chkPreserveOriginal" name="chkPreserveOriginal" type="checkbox" is="emby-checkbox" />
+                                <span>Preserve Original Files</span>
+                            </label>
+                            <div class="fieldDescription">Keep original file names when updating metadata</div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h3>Manual Actions</h3>
+                        <div class="inputContainer">
+                            <button id="btnManualCleanup" type="button" is="emby-button" class="raised button-submit">
+                                <span>Run Manual Cleanup Now</span>
+                            </button>
+                            <div class="fieldDescription">Immediately scan and clean all movie names in your library</div>
+                        </div>
+                        
+                        <div id="cleanupStatus" style="margin-top: 10px; display: none;">
+                            <div id="cleanupProgress" class="fieldDescription"></div>
+                            <div id="cleanupResults" class="fieldDescription" style="margin-top: 5px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection">
+                        <h3>Removal Patterns</h3>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtRemovalPatterns">Custom Patterns (one per line):</label>
+                            <textarea id="txtRemovalPatterns" name="txtRemovalPatterns" rows="8" class="emby-input" placeholder="Enter regex patterns to remove from movie names..."></textarea>
+                            <div class="fieldDescription">Regular expressions for patterns to remove from movie names. Default patterns include quality tags, codec info, and release group names.</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="btnSave" type="submit" is="emby-button" class="raised button-submit">
+                            <span>Save</span>
+                        </button>
+                        <button id="btnCancel" type="button" is="emby-button" class="raised button-cancel">
+                            <span>Cancel</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = "a1b2c3d4-e5f6-4789-a012-3456789abcde";
+
+            function loadPage(page, config) {
+                // Load configuration values
+                page.querySelector('#txtScanInterval').value = config.ScanIntervalHours || 1;
+                page.querySelector('#chkRemoveYear').checked = config.RemoveYear || false;
+                page.querySelector('#chkPreserveOriginal').checked = config.PreserveOriginalFiles || true;
+                
+                // Load removal patterns
+                var patterns = config.RemovalPatterns || [];
+                page.querySelector('#txtRemovalPatterns').value = patterns.join('\n');
+            }
+
+            function saveConfig(page) {
+                Dashboard.showLoadingMsg();
+
+                var config = {
+                    ScanIntervalHours: parseInt(page.querySelector('#txtScanInterval').value) || 1,
+                    RemoveYear: page.querySelector('#chkRemoveYear').checked,
+                    PreserveOriginalFiles: page.querySelector('#chkPreserveOriginal').checked,
+                    RemovalPatterns: page.querySelector('#txtRemovalPatterns').value
+                        .split('\n')
+                        .map(function(line) { return line.trim(); })
+                        .filter(function(line) { return line.length > 0; })
+                };
+
+                ApiClient.updatePluginConfiguration(pluginId, config).then(function () {
+                    Dashboard.processPluginConfigurationUpdateResult();
+                });
+            }
+
+            function runManualCleanup(page) {
+                var button = page.querySelector('#btnManualCleanup');
+                var statusDiv = page.querySelector('#cleanupStatus');
+                var progressDiv = page.querySelector('#cleanupProgress');
+                var resultsDiv = page.querySelector('#cleanupResults');
+
+                // Disable button and show status
+                button.disabled = true;
+                button.innerHTML = '<span>Running Cleanup...</span>';
+                statusDiv.style.display = 'block';
+                progressDiv.textContent = 'Starting cleanup process...';
+                resultsDiv.textContent = '';
+
+                // Call the manual cleanup API
+                ApiClient.ajax({
+                    type: 'POST',
+                    url: ApiClient.getUrl('MoviesRefine/ManualCleanup')
+                }).then(function(result) {
+                    // Success
+                    progressDiv.textContent = 'Cleanup completed successfully!';
+                    resultsDiv.textContent = 'Processed: ' + (result.Processed || 0) + ' movies, Cleaned: ' + (result.Cleaned || 0) + ' movies';
+                    
+                    // Re-enable button after 3 seconds
+                    setTimeout(function() {
+                        button.disabled = false;
+                        button.innerHTML = '<span>Run Manual Cleanup Now</span>';
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                }).catch(function(error) {
+                    // Error
+                    progressDiv.textContent = 'Cleanup failed!';
+                    resultsDiv.textContent = 'Error: ' + (error.message || 'Unknown error occurred');
+                    
+                    // Re-enable button
+                    button.disabled = false;
+                    button.innerHTML = '<span>Run Manual Cleanup Now</span>';
+                });
+            }
+
+            window.MoviesRefineConfigPage = {
+                pluginUniqueId: pluginId
+            };
+
+            document.addEventListener('pageshow', function(e) {
+                var page = e.target;
+                if (page.id !== 'MoviesRefineConfigPage') return;
+
+                // Load current configuration
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    loadPage(page, config);
+                });
+
+                // Setup event handlers
+                page.querySelector('#MoviesRefineConfigForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveConfig(page);
+                    return false;
+                });
+
+                page.querySelector('#btnCancel').addEventListener('click', function() {
+                    Dashboard.navigate('configurationpage?name=plugins');
+                });
+
+                page.querySelector('#btnManualCleanup').addEventListener('click', function() {
+                    runManualCleanup(page);
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

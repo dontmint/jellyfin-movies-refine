@@ -6,4 +6,7 @@
        <PackageReference Include="Jellyfin.Controller" Version="10.8.*" />
        <PackageReference Include="Jellyfin.Model" Version="10.8.*" />
      </ItemGroup>
+     <ItemGroup>
+       <EmbeddedResource Include="Configuration\configPage.html" />
+     </ItemGroup>
    </Project>

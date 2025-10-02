@@ -42,7 +42,7 @@ namespace Jellyfin.Plugin.MoviesRefine
     /// <summary>
     /// Main plugin class
     /// </summary>
-    public class Plugin : MediaBrowser.Common.Plugins.BasePlugin<PluginConfiguration>
+    public class Plugin : MediaBrowser.Common.Plugins.BasePlugin<PluginConfiguration>, MediaBrowser.Common.Plugins.IHasWebPages
     {
         public override string Name => "Movies Refine";
         public override Guid Id => Guid.Parse("a1b2c3d4-e5f6-4789-a012-3456789abcde");
@@ -55,6 +55,18 @@ namespace Jellyfin.Plugin.MoviesRefine
         }
 
         public static Plugin Instance { get; private set; }
+
+        public IEnumerable<MediaBrowser.Model.Plugins.PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new MediaBrowser.Model.Plugins.PluginPageInfo
+                {
+                    Name = "MoviesRefineConfigPage",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configPage.html"
+                }
+            };
+        }
     }
 
     /// <summary>
