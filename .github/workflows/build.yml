@@ -25,6 +25,9 @@ jobs:
       with:
         dotnet-version: '6.0.x'
     
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+    
     - name: Restore dependencies
       run: dotnet restore Jellyfin.Plugin.MoviesRefine/Jellyfin.Plugin.MoviesRefine.csproj
 
@@ -61,20 +64,35 @@ jobs:
     - name: Update manifest.json
       if: startsWith(github.ref, 'refs/tags/v')
       run: |
-        # Update the sourceUrl in manifest.json with the new version (array format)
-        sed -i "s|\"sourceUrl\": \".*\"|\"sourceUrl\": \"https://github.com/dontmint/jellyfin-movies-refine/releases/download/${{ github.ref_name }}/jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION }}.zip\"|" manifest.json
+        # Get commit messages since last tag for changelog
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -n "$LAST_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD | head -10)
+        else
+          CHANGELOG="- Initial release with intelligent pattern detection and safe title cleaning"
+        fi
         
-        # Update the version in manifest.json (array format)
-        sed -i "s|\"version\": \".*\"|\"version\": \"${{ steps.get_version.outputs.VERSION }}\"|" manifest.json
+        # Escape special characters for JSON
+        CHANGELOG_ESCAPED=$(echo "$CHANGELOG" | sed 's/"/\\"/g' | tr '\n' ' ')
         
-        # Update the checksum in manifest.json (array format)
-        sed -i "s|\"checksum\": \".*\"|\"checksum\": \"${{ steps.checksum.outputs.CHECKSUM }}\"|" manifest.json
+        # Create new version entry JSON
+        NEW_VERSION="{
+          \"version\": \"${{ steps.get_version.outputs.VERSION }}\",
+          \"changelog\": \"$CHANGELOG_ESCAPED\",
+          \"targetAbi\": \"10.8.0.0\",
+          \"sourceUrl\": \"https://github.com/dontmint/jellyfin-movies-refine/releases/download/${{ github.ref_name }}/jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION }}.zip\",
+          \"checksum\": \"${{ steps.checksum.outputs.CHECKSUM }}\",
+          \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+        }"
+        
+        # Use jq to add new version at the beginning of versions array
+        jq --argjson newVersion "$NEW_VERSION" '.[0].versions = [$newVersion] + .[0].versions' manifest.json > manifest_temp.json && mv manifest_temp.json manifest.json
         
         # Commit and push the updated manifest
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add manifest.json
-        git commit -m "chore: update manifest.json for release ${{ github.ref_name }}" || exit 0
+        git commit -m "chore: add version ${{ steps.get_version.outputs.VERSION }} to manifest.json" || exit 0
         git push origin HEAD:master
     
     - name: Create Release
