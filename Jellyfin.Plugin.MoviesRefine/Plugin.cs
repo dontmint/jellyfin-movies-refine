@@ -46,6 +46,16 @@ namespace Jellyfin.Plugin.MoviesRefine
     {
         public override string Name => "Movies Refine";
         public override Guid Id => Guid.Parse("a1b2c3d4-e5f6-4789-a012-3456789abcde");
+        
+        /// <summary>
+        /// Gets the plugin configuration page URL
+        /// </summary>
+        public override string ConfigurationFileName => "MoviesRefine.xml";
+        
+        /// <summary>
+        /// Gets the plugin description
+        /// </summary>
+        public override string Description => "Automatically cleans messy movie names by removing quality tags, website info, and other unwanted patterns";
 
         public Plugin(MediaBrowser.Common.Configuration.IApplicationPaths applicationPaths, 
                      MediaBrowser.Model.Serialization.IXmlSerializer xmlSerializer)
@@ -55,6 +65,15 @@ namespace Jellyfin.Plugin.MoviesRefine
         }
 
         public static Plugin Instance { get; private set; }
+        
+        /// <summary>
+        /// Gets the plugin configuration page URL for the web client
+        /// </summary>
+        /// <returns>The configuration page URL</returns>
+        public string GetConfigurationPageUrl()
+        {
+            return "/MoviesRefine/Configuration";
+        }
     }
 
     /// <summary>

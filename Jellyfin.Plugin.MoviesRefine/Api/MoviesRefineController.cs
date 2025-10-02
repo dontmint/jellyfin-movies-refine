@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -171,6 +173,41 @@ namespace Jellyfin.Plugin.MoviesRefine.Api
             }
 
             return cleaned;
+        }
+
+        /// <summary>
+        /// Serve the configuration page HTML
+        /// </summary>
+        /// <returns>Configuration page HTML</returns>
+        [HttpGet("Configuration")]
+        [AllowAnonymous]
+        public ActionResult GetConfigurationPage()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var resourceName = "Jellyfin.Plugin.MoviesRefine.Configuration.configPage.html";
+                
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (stream == null)
+                    {
+                        _logger.LogError("Configuration page resource not found: {ResourceName}", resourceName);
+                        return NotFound("Configuration page not found");
+                    }
+                    
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var html = reader.ReadToEnd();
+                        return Content(html, "text/html");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error serving configuration page");
+                return StatusCode(500, "Error loading configuration page");
+            }
         }
     }
 
