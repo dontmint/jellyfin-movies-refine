@@ -51,9 +51,9 @@ jobs:
     - name: Calculate checksum
       id: checksum
       run: |
-        CHECKSUM=$(sha256sum jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0' }}.zip | cut -d ' ' -f 1)
+        CHECKSUM=$(md5sum jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0' }}.zip | cut -d ' ' -f 1)
         echo "CHECKSUM=$CHECKSUM" >> $GITHUB_OUTPUT
-        echo "Calculated checksum: $CHECKSUM"
+        echo "Calculated MD5 checksum: $CHECKSUM"
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
