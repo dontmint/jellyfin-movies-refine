@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-Console.WriteLine("Movie Name Cleaner - Test Suite\n");
+Console.WriteLine("Movies Refine - Test Suite\n");
 Console.WriteLine("=" + new string('=', 60) + "\n");
 
 var testCases = new List<string>

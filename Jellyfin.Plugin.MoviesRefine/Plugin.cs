@@ -12,7 +12,7 @@ using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 using Jellyfin.Data.Enums;
 
-namespace Jellyfin.Plugin.MovieNameCleaner
+namespace Jellyfin.Plugin.MoviesRefine
 {
     /// <summary>
     /// Plugin configuration
@@ -44,7 +44,7 @@ namespace Jellyfin.Plugin.MovieNameCleaner
     /// </summary>
     public class Plugin : MediaBrowser.Common.Plugins.BasePlugin<PluginConfiguration>
     {
-        public override string Name => "Movie Name Cleaner";
+        public override string Name => "Movies Refine";
         public override Guid Id => Guid.Parse("a1b2c3d4-e5f6-4789-a012-3456789abcde");
 
         public Plugin(MediaBrowser.Common.Configuration.IApplicationPaths applicationPaths, 
@@ -60,13 +60,13 @@ namespace Jellyfin.Plugin.MovieNameCleaner
     /// <summary>
     /// Scheduled task to clean movie names
     /// </summary>
-    public class MovieNameCleanerTask : IScheduledTask, IConfigurableScheduledTask
+    public class MoviesRefineTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger<MovieNameCleanerTask> _logger;
+        private readonly ILogger<MoviesRefineTask> _logger;
 
         public string Name => "Clean Movie Names";
-        public string Key => "MovieNameCleaner";
+        public string Key => "MoviesRefine";
         public string Description => "Removes unnecessary patterns from movie titles for better metadata matching";
         public string Category => "Library";
         
@@ -75,7 +75,7 @@ namespace Jellyfin.Plugin.MovieNameCleaner
         public bool IsEnabled => true;
         public bool IsLogged => true;
 
-        public MovieNameCleanerTask(ILibraryManager libraryManager, ILogger<MovieNameCleanerTask> logger)
+        public MoviesRefineTask(ILibraryManager libraryManager, ILogger<MoviesRefineTask> logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -83,7 +83,7 @@ namespace Jellyfin.Plugin.MovieNameCleaner
 
         public async Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting Movie Name Cleaner task");
+            _logger.LogInformation("Starting Movies Refine task");
             
             var config = Plugin.Instance.Configuration;
             var movies = _libraryManager.GetItemList(new MediaBrowser.Controller.Entities.InternalItemsQuery
@@ -119,7 +119,7 @@ namespace Jellyfin.Plugin.MovieNameCleaner
                 progress?.Report((double)processed / totalMovies * 100);
             }
 
-            _logger.LogInformation($"Movie Name Cleaner completed. Processed: {processed}, Cleaned: {cleaned}");
+            _logger.LogInformation($"Movies Refine completed. Processed: {processed}, Cleaned: {cleaned}");
         }
 
         // Keep old Execute method for backwards compatibility

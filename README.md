@@ -1,4 +1,4 @@
-# Jellyfin Movie Name Cleaner Plugin
+# Jellyfin Movies Refine Plugin
 
 A smart Jellyfin plugin that intelligently cleans messy movie titles by removing quality markers, website tags, and release group information while preserving already clean names.
 
@@ -25,19 +25,19 @@ A smart Jellyfin plugin that intelligently cleans messy movie titles by removing
 ### From Jellyfin Plugin Catalog (Recommended)
 1. Open Jellyfin web interface
 2. Go to **Dashboard** → **Plugins** → **Catalog**
-3. Search for "Movie Name Cleaner"
+3. Search for "Movies Refine"
 4. Click **Install**
 5. Restart Jellyfin
 
 ### Manual Installation
-1. Download the latest `Jellyfin.Plugin.MovieNameCleaner.dll` from [Releases](https://github.com/YOUR_USERNAME/jellyfin-plugin-movienamecleaner/releases)
-2. Create folder: `/path/to/jellyfin/plugins/MovieNameCleaner/`
+1. Download the latest `Jellyfin.Plugin.MoviesRefine.dll` from [Releases](https://github.com/YOUR_USERNAME/jellyfin-movies-refine/releases)
+2. Create folder: `/path/to/jellyfin/plugins/MoviesRefine/`
 3. Copy the DLL to this folder
 4. Restart Jellyfin
 
 ## Usage
 
-1. Go to **Dashboard** → **Plugins** → **Movie Name Cleaner**
+1. Go to **Dashboard** → **Plugins** → **Movies Refine**
 2. Configure settings:
    - **Remove Year**: Toggle year extraction and re-addition
    - **Custom Patterns**: Add additional removal patterns if needed
@@ -57,7 +57,7 @@ The plugin detects these messy patterns automatically:
 
 ### Building
 ```bash
-dotnet build Jellyfin.Plugin.MovieNameCleaner/Jellyfin.Plugin.MovieNameCleaner.csproj --configuration Release
+dotnet build Jellyfin.Plugin.MoviesRefine/Jellyfin.Plugin.MoviesRefine.csproj --configuration Release
 ```
 
 ### Testing
@@ -81,6 +81,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 If you encounter issues or have suggestions:
-- Open an [issue](https://github.com/YOUR_USERNAME/jellyfin-plugin-movienamecleaner/issues)
+- Open an [issue](https://github.com/YOUR_USERNAME/jellyfin-movies-refine/issues)
 - Check existing issues for solutions
 - Provide example movie titles that aren't cleaning correctly
