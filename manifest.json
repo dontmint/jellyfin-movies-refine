@@ -8,10 +8,10 @@
   "imageUrl": "",
   "versions": [
     {
-      "version": "1.0.0.0",
+      "version": "1.0.0",
       "changelog": "Initial release with intelligent pattern detection and safe title cleaning",
       "targetAbi": "10.8.0.0",
-      "sourceUrl": "https://github.com/dontmint/jellyfin-movies-refine/releases/download/v1.0.0/jellyfin-movies-refine_1.0.0.0.zip",
+      "sourceUrl": "https://github.com/dontmint/jellyfin-movies-refine/releases/download/v1.0.0/jellyfin-movies-refine_1.0.0.zip",
       "checksum": "",
       "timestamp": "2024-01-20T00:00:00Z"
     }

@@ -34,20 +34,38 @@ jobs:
     - name: Extract version from tag
       if: startsWith(github.ref, 'refs/tags/v')
       id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
     
     - name: Create plugin package
       run: |
         mkdir -p plugin-package
         cp Jellyfin.Plugin.MoviesRefine/bin/Release/net6.0/Jellyfin.Plugin.MoviesRefine.dll plugin-package/
         cd plugin-package
-        zip -r ../jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0.0' }}.zip .
+        zip -r ../jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0' }}.zip .
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: plugin-zip
-        path: jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0.0' }}.zip
+        path: jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION || '1.0.0' }}.zip
+    
+    - name: Update manifest.json
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        # Update the sourceUrl in manifest.json with the new version
+        sed -i "s|\"sourceUrl\": \".*\"|\"sourceUrl\": \"https://github.com/dontmint/jellyfin-movies-refine/releases/download/${{ github.ref_name }}/jellyfin-movies-refine_${{ steps.get_version.outputs.VERSION }}.zip\"|" manifest.json
+        
+        # Update the version in manifest.json
+        sed -i "s|\"version\": \".*\"|\"version\": \"${{ steps.get_version.outputs.VERSION }}\"|" manifest.json
+        
+        # Commit and push the updated manifest
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add manifest.json
+        git commit -m "chore: update manifest.json for release ${{ github.ref_name }}" || exit 0
+        git push origin HEAD:master
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
