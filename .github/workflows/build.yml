@@ -1,0 +1,58 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore Jellyfin.Plugin.MovieNameCleaner/Jellyfin.Plugin.MovieNameCleaner.csproj
+    
+    - name: Build
+      run: dotnet build Jellyfin.Plugin.MovieNameCleaner/Jellyfin.Plugin.MovieNameCleaner.csproj --configuration Release --no-restore
+    
+    - name: Test
+      run: dotnet run --project PluginTester.cs
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: plugin-dll
+        path: Jellyfin.Plugin.MovieNameCleaner/bin/Release/net6.0/Jellyfin.Plugin.MovieNameCleaner.dll
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Jellyfin.Plugin.MovieNameCleaner/bin/Release/net6.0/Jellyfin.Plugin.MovieNameCleaner.dll
+        asset_name: Jellyfin.Plugin.MovieNameCleaner.dll
+        asset_content_type: application/octet-stream
