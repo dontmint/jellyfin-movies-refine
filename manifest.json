@@ -9,6 +9,22 @@
     "imageUrl": "",
     "versions": [
       {
+        "version": "1.0.0-test-20260330201556",
+        "changelog": "- Initial release with intelligent pattern detection and safe title cleaning ",
+        "targetAbi": "10.8.0.0",
+        "sourceUrl": "https://github.com/dontmint/jellyfin-movies-refine/releases/download/v1.0.0-test-20260330201556/jellyfin-movies-refine_1.0.0-test-20260330201556.zip",
+        "checksum": "1f70e9afd4956974b4aa20ba5a817b31",
+        "timestamp": "2026-03-30T13:16:37Z"
+      },
+      {
+        "version": "1.0.0-test-20260330201556",
+        "changelog": "- Initial release with intelligent pattern detection and safe title cleaning ",
+        "targetAbi": "10.8.0.0",
+        "sourceUrl": "https://github.com/dontmint/jellyfin-movies-refine/releases/download/v1.0.0-test-20260330201556/jellyfin-movies-refine_1.0.0-test-20260330201556.zip",
+        "checksum": "1f70e9afd4956974b4aa20ba5a817b31",
+        "timestamp": "2026-03-30T13:16:37Z"
+      },
+      {
         "version": "1.0.0-test-20260330201043",
         "changelog": "- Initial release with intelligent pattern detection and safe title cleaning ",
         "targetAbi": "10.8.0.0",
